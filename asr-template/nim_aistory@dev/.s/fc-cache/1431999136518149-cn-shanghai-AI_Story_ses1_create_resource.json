@@ -1,9 +1,0 @@
-{
-  "logstore": "1431999136518149-cn-shanghai-logproject/fc-service-ai_story_ses1-logstore",
-  "serviceName": "AI_Story_ses1",
-  "functionNames": [
-    "AI_Story_ses1/llama3_1_8b",
-    "AI_Story_ses1/mistral",
-    "AI_Story_ses1/init"
-  ]
-}
