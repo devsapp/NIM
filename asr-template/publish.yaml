@@ -1,0 +1,44 @@
+Type: Application
+Name: nim_asr
+Version: 0.0.5
+Provider:
+  - 阿里云 # 取值内容参考：https://api.devsapp.cn/v3/common/args.html
+Description: 使用serverless devs将NIM部署到阿里云函数计算上
+
+Tags: #标签详情
+  - 部署函数
+Category: 人工智能 # 取值内容参考：https://api.devsapp.cn/v3/common/args.html
+# Service: # 使用的服务
+#   函数计算: # 取值内容参考：https://api.devsapp.cn/v3/common/args.html
+#     Authorities: #权限描述
+#       - AliyunFCFullAccess # 所需要的权限
+#   专有网络:
+#     Authorities:
+#       - AliyunFCServerlessDevsRolePolicy
+#     Description: 云数据库所在的专有网络
+
+# Organization: 阿里云函数计算（FC） # 所属组织
+# Effective: Public # 是否公开，取值：Public，Private，Organization
+Parameters:
+  type: object
+  additionalProperties: false # 不允许增加其他属性
+  required: # 必填项
+    - region
+    - apiKey
+  properties:
+    region:
+      title: 地域
+      type: string
+      default: cn-shanghai
+      description: 创建应用所在的地区
+      enum:
+        - cn-shanghai
+
+    apiKey:
+      title: 模型API_KEY
+      type: string
+      pattern: "^[a-zA-Z_][a-zA-Z0-9-_]{0,127}$"
+      description: 模型的API_KEY，需要到NV控制台获取
+
+
+    

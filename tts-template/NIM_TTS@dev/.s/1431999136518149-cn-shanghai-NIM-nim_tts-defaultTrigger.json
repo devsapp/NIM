@@ -1,0 +1,28 @@
+{
+  "statefulConfig": {
+    "triggerName": "defaultTrigger",
+    "description": "",
+    "triggerId": "6285d2aa-8293-4a8a-abbb-23826d782b2d",
+    "sourceArn": null,
+    "triggerType": "http",
+    "invocationRole": null,
+    "qualifier": "LATEST",
+    "urlInternet": "https://nim-tts-nim-hngwprqfzr.cn-shanghai.fcapp.run",
+    "urlIntranet": "https://nim-tts-nim-hngwprqfzr.cn-shanghai-vpc.fcapp.run",
+    "triggerConfig": {
+      "methods": [
+        "GET",
+        "POST",
+        "PUT",
+        "DELETE"
+      ],
+      "authType": "anonymous",
+      "disableURLInternet": false
+    },
+    "createdTime": "2024-11-21T10:17:19Z",
+    "lastModifiedTime": "2024-11-22T01:58:11Z",
+    "status": null,
+    "targetArn": null,
+    "name": "defaultTrigger"
+  }
+}

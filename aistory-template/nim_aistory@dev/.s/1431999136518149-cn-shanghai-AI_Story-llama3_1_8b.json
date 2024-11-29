@@ -1,0 +1,80 @@
+{
+  "statefulConfig": {
+    "functionId": "f44539cc-d1e8-430f-ac9f-a87ef4c235c1",
+    "functionName": "llama3_1_8b",
+    "description": "AI_Story 后端 llama3_1_8b 函数",
+    "runtime": "custom-container",
+    "handler": "index.handler",
+    "timeout": 600,
+    "initializer": "",
+    "initializationTimeout": 3,
+    "codeSize": 0,
+    "codeChecksum": "",
+    "memorySize": 65536,
+    "gpuMemorySize": 49152,
+    "cpu": 8,
+    "diskSize": 10240,
+    "environmentVariables": {
+      "HF_HOME": "/mnt/auto/huggingface/hub",
+      "HF_HUB_OFFLINE": "1",
+      "NGC_API_KEY": "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",
+      "NIM_CACHE_PATH": "/mnt/auto",
+      "NIM_MODEL_PROFILE": "3bb4e8fe78e5037b05dd618cebb1053347325ad6a1e709e0eb18bb8558362ac5",
+      "TLLM_LOG_LEVEL": "ERROR",
+      "UVICORN_LOG_LEVEL": "info",
+      "VLLM_ENGINE_ITERATION_TIMEOUT_S": "180",
+      "VLLM_LOGGING_CONFIG_PATH": "/etc/nim/config/python_readable_logging_config.json",
+      "VLLM_NVEXT_LOGGING_CONFIG_PATH": "/etc/nim/config/python_readable_logging_config.json",
+      "VLLM_NVEXT_LOG_LEVEL": "INFO"
+    },
+    "createdTime": "2024-11-28T08:20:15Z",
+    "lastModifiedTime": "2024-11-28T09:58:33Z",
+    "instanceConcurrency": 10,
+    "instanceSoftConcurrency": null,
+    "customContainerConfig": {
+      "accelerationInfo": {
+        "status": "Ready"
+      },
+      "accelerationType": "Default",
+      "args": "",
+      "command": "[\"bash\",\"-c\",\"/opt/nvidia/nvidia_entrypoint.sh python3 -m vllm_nvext.entrypoints.launch --enforce-eager --disable-custom-all-reduce\"]",
+      "image": "registry.cn-shanghai.aliyuncs.com/aliyun-fc/nim-nvidia-fastpitch-hifigan-tts-1.0.0-fc-1:nim-meta-llama-3.1-8b-instruct-1.2.2-fc-1",
+      "imageAcclConfig": null,
+      "lastAvailableImageAcclConfigInternal": null,
+      "instanceID": null,
+      "serverlessImage": null,
+      "webServerMode": true
+    },
+    "caPort": 8000,
+    "instanceType": "fc.gpu.ada.1",
+    "layers": null,
+    "layersArnV2": null,
+    "instanceLifecycleConfig": {
+      "preFreeze": {
+        "handler": "",
+        "timeout": 3
+      },
+      "preStop": {
+        "handler": "",
+        "timeout": 3
+      }
+    },
+    "customDNS": null,
+    "customRuntimeConfig": null,
+    "customHealthCheckConfig": {
+      "httpGetUrl": "/v1/health/ready",
+      "initialDelaySeconds": 5,
+      "periodSeconds": 120,
+      "timeoutSeconds": 3,
+      "failureThreshold": 3,
+      "successThreshold": 1
+    },
+    "name": "llama3_1_8b",
+    "asyncConfiguration": {
+      "destinationConfig": null,
+      "maxAsyncEventAgeInSeconds": null,
+      "statefulInvocation": null,
+      "maxAsyncRetryAttempts": null
+    }
+  }
+}

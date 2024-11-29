@@ -1,0 +1,159 @@
+# ------------------------------------
+#   官方手册: https://docs.serverless-devs.com/user-guide/aliyun/#fc3
+#   常见小贴士: https://manual.serverless-devs.com/user-guide/tips/
+#   有问题快来钉钉群问一下吧：33947367
+# ------------------------------------
+edition: 1.0.0
+name: ai_asr
+access: default
+
+vars: 
+  region: "cn-shanghai"
+  serviceName: "ASR_4bbo"
+  functionName: "nim_asr" 
+  imageUrlASR: registry.cn-shanghai.aliyuncs.com/aliyun-fc/nim-nvidia-fastpitch-hifigan-tts-1.0.0-fc-1:asr-v1
+  imageUrlParakeet: registry.cn-shanghai.aliyuncs.com/aliyun-fc/nim-nvidia-fastpitch-hifigan-tts-1.0.0-fc-1:nim-nvidia-parakeet-ctc-1.1b-asr-1.0.0-fc-1
+  apiKey: "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"
+  service:
+    name: ${vars.serviceName}
+    description: 'AI_ASR 部署到函数计算'
+    internetAccess: true
+    logConfig: auto
+    vpcConfig: auto
+    nasConfig: auto
+
+services:
+  # 初始化模型函数
+  initial:
+    component: fc
+    actions: 
+      post-deploy:
+        - component: fc invoke --service_name ${this.output.service_name} --function ${this.output.function_name} 
+    props:
+      region: ${vars.region}
+      service: ${vars.service}
+      function:
+        name: init
+        description: 模型初始化函数
+        handler: main.handler
+        timeout: 3600
+        diskSize: 512
+        codeUri: './initial'
+        runtime: python3.10
+        cpu: 16
+        instanceConcurrency: 1
+        # cpu: 8
+        memorySize: 32768
+
+  # FrontEnd
+  searchfile:
+    component: fc
+    actions: 
+      post-deploy: 
+        - component: fc ondemand put --qualifier LATEST --max 1
+    props:
+      region: "${vars.region}" 
+      service: ${vars.service}
+      function:
+        name: ${vars.functionName}
+        description: "NIM_AISTORY"
+
+        handler: index.handler
+        timeout: 600
+        diskSize: 512
+        caPort: 8501
+        # 运行时
+        runtime: custom-container
+        customContainerConfig:
+          args: ''
+          accelerationType: Default
+          image: ${vars.imageUrlASR}
+          accelerationInfo:
+            status: Preparing
+          command: ''
+          webServerMode: true
+        # 规格
+        instanceConcurrency: 100
+        cpu: 8
+        memorySize: 32768
+        environmentVariables:
+          ENTRY_URL: "${parakeet.output.url.system_url}:8089"
+          API_KEY: "${vars.apiKey}"
+
+      triggers:
+        - name: defaultTrigger
+          description: ''
+          type: http
+          qualifier: LATEST
+          config:
+            methods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+            authType: anonymous
+            disableURLInternet: false
+
+      customDomains:
+        - domainName: auto
+          protocol: HTTP
+          routeConfigs:
+            - path: /*
+
+
+  #backend
+  parakeet:
+    component: fc
+    actions: 
+      post-deploy: 
+        - component: fc provision put --qualifier LATEST --target 1 --enable-idle-billing true
+    props:
+      region: ${vars.region}
+      service: ${vars.service}
+      function:
+        name: "parakeet"
+        description: ASR 后端 parakeet 函数
+
+        handler: index.handler
+        timeout: 600
+        diskSize: 30720
+        caPort: 50051
+        instanceType: fc.gpu.ada.1
+
+        # 运行时
+        runtime: custom-container
+        customContainerConfig:
+          args: ''
+          accelerationType: Default
+          image: ${vars.imageUrlParakeet}
+          accelerationInfo:
+            status: Preparing
+          command: ''
+          webServerMode: true
+
+        instanceConcurrency: 10
+        cpu: 8
+        memorySize: 65536
+        gpuMemorySize: 49152
+        asyncConfiguration: {}
+
+        environmentVariables:
+          NGC_API_KEY: "${vars.apiKey}" 
+          NIM_CACHE_PATH: "/mnt/auto"
+          NIM_HTTP_API_PORT: "9000"
+          NIM_MANIFEST_PROFILE: "40d7e326-43f4-11ef-87a2-239b5c506ca7"
+          NIMFC_MODEL_EGREP: "parakeet-ctc-riva-1-1b.*l40|punctuation-riva.*l40"
+          
+      triggers:
+        - name: defaultTrigger
+          description: ''
+          type: http
+          qualifier: LATEST
+          config:
+            methods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+            authType: anonymous
+            disableURLInternet: false

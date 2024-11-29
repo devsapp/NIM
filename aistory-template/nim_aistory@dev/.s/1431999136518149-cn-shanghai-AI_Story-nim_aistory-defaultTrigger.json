@@ -1,0 +1,28 @@
+{
+  "statefulConfig": {
+    "triggerName": "defaultTrigger",
+    "description": "",
+    "triggerId": "18c33cd0-2490-4361-b7e5-b31d6a2dede3",
+    "sourceArn": null,
+    "triggerType": "http",
+    "invocationRole": null,
+    "qualifier": "LATEST",
+    "urlInternet": "https://nim-aistory-ai-story-uhusaacejv.cn-shanghai.fcapp.run",
+    "urlIntranet": "https://nim-aistory-ai-story-uhusaacejv.cn-shanghai-vpc.fcapp.run",
+    "triggerConfig": {
+      "methods": [
+        "GET",
+        "POST",
+        "PUT",
+        "DELETE"
+      ],
+      "authType": "anonymous",
+      "disableURLInternet": false
+    },
+    "createdTime": "2024-11-28T08:21:09Z",
+    "lastModifiedTime": "2024-11-28T10:01:04Z",
+    "status": null,
+    "targetArn": null,
+    "name": "defaultTrigger"
+  }
+}

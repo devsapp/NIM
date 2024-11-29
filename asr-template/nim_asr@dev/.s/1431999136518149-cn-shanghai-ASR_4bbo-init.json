@@ -1,0 +1,42 @@
+{
+  "statefulConfig": {
+    "functionId": "920a2d0c-52a7-4b58-85d7-c3e6f50bcc45",
+    "functionName": "init",
+    "description": "模型初始化函数",
+    "runtime": "python3.10",
+    "handler": "main.handler",
+    "timeout": 3600,
+    "initializer": "",
+    "initializationTimeout": 3,
+    "codeSize": 4671570,
+    "codeChecksum": "1569660188270752611",
+    "memorySize": 32768,
+    "gpuMemorySize": null,
+    "cpu": 16,
+    "diskSize": 512,
+    "environmentVariables": {},
+    "createdTime": "2024-11-25T06:37:35Z",
+    "lastModifiedTime": "2024-11-25T06:37:35Z",
+    "instanceConcurrency": 1,
+    "instanceSoftConcurrency": null,
+    "customContainerConfig": null,
+    "caPort": null,
+    "instanceType": "e1",
+    "layers": null,
+    "layersArnV2": null,
+    "instanceLifecycleConfig": {
+      "preFreeze": {
+        "handler": "",
+        "timeout": 3
+      },
+      "preStop": {
+        "handler": "",
+        "timeout": 3
+      }
+    },
+    "customDNS": null,
+    "customRuntimeConfig": null,
+    "customHealthCheckConfig": null,
+    "name": "init"
+  }
+}

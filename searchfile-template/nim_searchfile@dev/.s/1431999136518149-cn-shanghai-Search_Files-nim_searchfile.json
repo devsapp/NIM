@@ -1,0 +1,58 @@
+{
+  "statefulConfig": {
+    "functionId": "d9965614-675b-48d0-b79b-53e37e8385df",
+    "functionName": "nim_searchfile",
+    "description": "NIM_Searchfile",
+    "runtime": "custom-container",
+    "handler": "index.handler",
+    "timeout": 600,
+    "initializer": "",
+    "initializationTimeout": 3,
+    "codeSize": 0,
+    "codeChecksum": "",
+    "memorySize": 32768,
+    "gpuMemorySize": null,
+    "cpu": 8,
+    "diskSize": 512,
+    "environmentVariables": {
+      "API_KEY": "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",
+      "BASE_URL_MISTRAL": "https://mistral-search-files-bzoqkmveys.cn-shanghai.fcapp.run/v1"
+    },
+    "createdTime": "2024-11-26T09:29:10Z",
+    "lastModifiedTime": "2024-11-26T09:44:15Z",
+    "instanceConcurrency": 100,
+    "instanceSoftConcurrency": null,
+    "customContainerConfig": {
+      "accelerationInfo": {
+        "status": "Ready"
+      },
+      "accelerationType": "Default",
+      "args": "",
+      "command": "",
+      "image": "registry.cn-shanghai.aliyuncs.com/aliyun-fc/nim-nvidia-fastpitch-hifigan-tts-1.0.0-fc-1:searchfile-frontend-v1",
+      "imageAcclConfig": null,
+      "lastAvailableImageAcclConfigInternal": null,
+      "instanceID": null,
+      "serverlessImage": null,
+      "webServerMode": true
+    },
+    "caPort": 8501,
+    "instanceType": "e1",
+    "layers": null,
+    "layersArnV2": null,
+    "instanceLifecycleConfig": {
+      "preFreeze": {
+        "handler": "",
+        "timeout": 3
+      },
+      "preStop": {
+        "handler": "",
+        "timeout": 3
+      }
+    },
+    "customDNS": null,
+    "customRuntimeConfig": null,
+    "customHealthCheckConfig": null,
+    "name": "nim_searchfile"
+  }
+}

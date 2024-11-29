@@ -1,0 +1,49 @@
+{
+  "statefulConfig": {
+    "serviceName": "Search_Files",
+    "description": "AI_Searchfile 部署到函数计算",
+    "role": "acs:ram::1431999136518149:role/aliyunfcdefaultrole",
+    "logConfig": {
+      "project": "1431999136518149-cn-shanghai-logproject",
+      "logstore": "fc-service-search_files-logstore",
+      "enableRequestMetrics": true,
+      "enableInstanceMetrics": true,
+      "logBeginRule": "DefaultRegex"
+    },
+    "serviceId": "ba9f9ab8-3d4f-490e-85f2-87971b79d7f3",
+    "createdTime": "2024-11-23T07:25:40Z",
+    "lastModifiedTime": "2024-11-26T09:47:54Z",
+    "vpcConfig": {
+      "vpcId": "vpc-uf638ir76pc2cevmfg246",
+      "vSwitchIds": [
+        "vsw-uf6p62lo20onpj48mpg60"
+      ],
+      "securityGroupId": "sg-uf6780p0snansz1dvusf",
+      "role": null,
+      "anytunnelViaENI": null
+    },
+    "internetAccess": true,
+    "nasConfig": {
+      "userId": 0,
+      "groupId": 0,
+      "mountPoints": [
+        {
+          "serverAddr": "389484a516-kva6.cn-shanghai.nas.aliyuncs.com:/Search_Files",
+          "mountDir": "/mnt/auto",
+          "enableTLS": false
+        }
+      ]
+    },
+    "ossMountConfig": {
+      "mountPoints": []
+    },
+    "vendorConfig": null,
+    "tracingConfig": {
+      "type": null,
+      "params": null,
+      "jaegerConfig": null
+    },
+    "useSLRAuthentication": true,
+    "name": "Search_Files"
+  }
+}

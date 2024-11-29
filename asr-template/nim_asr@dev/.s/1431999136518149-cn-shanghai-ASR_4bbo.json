@@ -1,0 +1,79 @@
+{
+  "statefulConfig": {
+    "serviceName": "ASR_4bbo",
+    "description": "AI_ASR 部署到函数计算",
+    "role": "acs:ram::1431999136518149:role/aliyunfcdefaultrole",
+    "logConfig": {
+      "project": "1431999136518149-cn-shanghai-logproject",
+      "logstore": "fc-service-asr_4bbo-logstore",
+      "enableRequestMetrics": true,
+      "enableInstanceMetrics": true,
+      "logBeginRule": "DefaultRegex"
+    },
+    "serviceId": "cba65687-b032-4622-a334-3ccca4bc3214",
+    "createdTime": "2024-11-25T06:37:21Z",
+    "lastModifiedTime": "2024-11-25T06:43:44Z",
+    "vpcConfig": {
+      "vpcId": "vpc-uf638ir76pc2cevmfg246",
+      "vSwitchIds": [
+        "vsw-uf6p62lo20onpj48mpg60"
+      ],
+      "securityGroupId": "sg-uf6780p0snansz1dvusf",
+      "role": null,
+      "anytunnelViaENI": null
+    },
+    "internetAccess": true,
+    "nasConfig": {
+      "userId": 0,
+      "groupId": 0,
+      "mountPoints": [
+        {
+          "serverAddr": "389484a516-kva6.cn-shanghai.nas.aliyuncs.com:/ASR_4bbo",
+          "mountDir": "/mnt/auto",
+          "enableTLS": false
+        }
+      ]
+    },
+    "ossMountConfig": {
+      "mountPoints": []
+    },
+    "vendorConfig": null,
+    "tracingConfig": {
+      "type": null,
+      "params": null,
+      "jaegerConfig": null
+    },
+    "useSLRAuthentication": true,
+    "name": "ASR_4bbo"
+  },
+  "statefulAutoConfig": {
+    "nasConfig": {
+      "userId": 0,
+      "groupId": 0,
+      "mountPoints": [
+        {
+          "serverAddr": "389484a516-kva6.cn-shanghai.nas.aliyuncs.com:/ASR_4bbo",
+          "mountDir": "/mnt/auto",
+          "enableTLS": false
+        }
+      ]
+    },
+    "vpcConfig": {
+      "vpcId": "vpc-uf638ir76pc2cevmfg246",
+      "vSwitchIds": [
+        "vsw-uf6p62lo20onpj48mpg60"
+      ],
+      "securityGroupId": "sg-uf6780p0snansz1dvusf",
+      "role": null,
+      "anytunnelViaENI": null
+    },
+    "logConfig": {
+      "project": "1431999136518149-cn-shanghai-logproject",
+      "logstore": "fc-service-asr_4bbo-logstore",
+      "enableRequestMetrics": true,
+      "enableInstanceMetrics": true,
+      "logBeginRule": "DefaultRegex"
+    },
+    "role": "acs:ram::1431999136518149:role/aliyunfcdefaultrole"
+  }
+}

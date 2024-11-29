@@ -1,0 +1,28 @@
+{
+  "statefulConfig": {
+    "triggerName": "defaultTrigger",
+    "description": "",
+    "triggerId": "24e18f9d-e89b-4f57-8f34-3724bf359085",
+    "sourceArn": null,
+    "triggerType": "http",
+    "invocationRole": null,
+    "qualifier": "LATEST",
+    "urlInternet": "https://mistral-search-files-bzoqkmveys.cn-shanghai.fcapp.run",
+    "urlIntranet": "https://mistral-search-files-bzoqkmveys.cn-shanghai-vpc.fcapp.run",
+    "triggerConfig": {
+      "methods": [
+        "GET",
+        "POST",
+        "PUT",
+        "DELETE"
+      ],
+      "authType": "anonymous",
+      "disableURLInternet": false
+    },
+    "createdTime": "2024-11-23T07:30:30Z",
+    "lastModifiedTime": "2024-11-26T09:47:43Z",
+    "status": null,
+    "targetArn": null,
+    "name": "defaultTrigger"
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "statefulConfig": {
+    "triggerName": "defaultTrigger",
+    "description": "",
+    "triggerId": "57e18d5c-efc1-4d5f-8511-b749c14dac38",
+    "sourceArn": null,
+    "triggerType": "http",
+    "invocationRole": null,
+    "qualifier": "LATEST",
+    "urlInternet": "https://mistral-ai-story-poedojwaek.cn-shanghai.fcapp.run",
+    "urlIntranet": "https://mistral-ai-story-poedojwaek.cn-shanghai-vpc.fcapp.run",
+    "triggerConfig": {
+      "methods": [
+        "GET",
+        "POST",
+        "PUT",
+        "DELETE"
+      ],
+      "authType": "anonymous",
+      "disableURLInternet": false
+    },
+    "createdTime": "2024-11-28T06:31:43Z",
+    "lastModifiedTime": "2024-11-28T06:56:54Z",
+    "status": null,
+    "targetArn": null,
+    "name": "defaultTrigger"
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "domainName": "nim-aistory.ai-story.1431999136518149.cn-shanghai.fc.devsapp.net",
+  "accountId": "1431999136518149",
+  "protocol": "HTTP",
+  "certConfig": {
+    "certName": null,
+    "privateKey": null,
+    "certificate": null
+  },
+  "tlsConfig": {
+    "minVersion": null,
+    "maxVersion": null,
+    "cipherSuites": null
+  },
+  "apiVersion": "2016-08-15",
+  "routeConfig": {
+    "routes": [
+      {
+        "path": "/*",
+        "accountId": null,
+        "apiVersion": "",
+        "serviceName": "AI_Story",
+        "functionName": "nim_aistory",
+        "qualifier": null,
+        "methods": null,
+        "rewriteConfig": null,
+        "innerRewriteConfig": null
+      }
+    ]
+  },
+  "createdTime": "2024-11-28T03:59:55Z",
+  "lastModifiedTime": "2024-11-28T06:57:25Z",
+  "keepFullPath": null,
+  "subdomainCount": null,
+  "wafConfig": {
+    "enableWAF": false
+  }
+}

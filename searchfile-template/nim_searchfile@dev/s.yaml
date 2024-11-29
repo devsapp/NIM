@@ -1,0 +1,167 @@
+# ------------------------------------
+#   官方手册: https://docs.serverless-devs.com/user-guide/aliyun/#fc3
+#   常见小贴士: https://manual.serverless-devs.com/user-guide/tips/
+#   有问题快来钉钉群问一下吧：33947367
+# ------------------------------------
+edition: 1.0.0
+name: searchfile
+access: default
+
+vars: 
+  region: "cn-shanghai"
+  serviceName: "Search_Files"
+  functionName: "nim_searchfile" 
+  imageUrlAIStory: registry.cn-shanghai.aliyuncs.com/aliyun-fc/nim-nvidia-fastpitch-hifigan-tts-1.0.0-fc-1:searchfile-frontend-v1
+  imageUrlMistral: registry.cn-shanghai.aliyuncs.com/aliyun-fc/nim-nvidia-fastpitch-hifigan-tts-1.0.0-fc-1:nim-mistralai-mistral-7b-instruct-v0.3-1.1.2
+  apiKey: "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"
+  service:
+    name: ${vars.serviceName}
+    description: 'AI_Searchfile 部署到函数计算'
+    internetAccess: true
+    logConfig: auto
+    vpcConfig: auto
+    nasConfig: auto
+
+services:
+  # 模型初始化函数
+  initial:
+    component: fc
+    actions: 
+      post-deploy:
+        - run: s cli fc invoke --timeout 3600 -a root --service-name Search_Files --function-name init --region cn-shanghai && s cli fc provision put --qualifier LATEST --target 1 --enable-idle-billing true -a root --service-name Search_Files --function-name mistral --region cn-shanghai
+    props:
+      region: ${vars.region}
+      service: ${vars.service}
+      function:
+        name: init
+        description: 模型初始化函数
+        handler: main.handler
+        timeout: 3600
+        diskSize: 512
+        codeUri: './initial'
+        runtime: python3.10
+        cpu: 16
+        instanceConcurrency: 1
+        # cpu: 8
+        memorySize: 32768
+
+  # FrontEnd
+  searchfile:
+    component: fc
+    actions: 
+      post-deploy: 
+        - component: fc ondemand put --qualifier LATEST --max 1
+    props:
+      region: "${vars.region}" 
+      service: ${vars.service}
+      function:
+        name: ${vars.functionName}
+        description: "NIM_Searchfile"
+
+        handler: index.handler
+        timeout: 600
+        diskSize: 512
+        caPort: 8501
+        # 运行时
+        runtime: custom-container
+        customContainerConfig:
+          args: ''
+          accelerationType: Default
+          image: ${vars.imageUrlAIStory}
+          accelerationInfo:
+            status: Preparing
+          command: ''
+          webServerMode: true
+        # 规格
+        instanceConcurrency: 100
+        cpu: 8
+        memorySize: 32768
+        environmentVariables:
+          BASE_URL_MISTRAL: "${mistral.output.url.system_url}/v1"
+          API_KEY: "${vars.apiKey}"
+
+      triggers:
+        - name: defaultTrigger
+          description: ''
+          type: http
+          qualifier: LATEST
+          config:
+            methods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+            authType: anonymous
+            disableURLInternet: false
+
+      customDomains:
+        - domainName: auto
+          protocol: HTTP
+          routeConfigs:
+            - path: /*
+
+
+  #backend
+  mistral:
+    component: fc
+    props:
+      region: ${vars.region}
+      service: ${vars.service}
+      function:
+        name: "mistral"
+        description: AI_Story 后端 mistral 函数
+
+        handler: index.handler
+        timeout: 600
+        diskSize: 10240
+        caPort: 8000
+        instanceType: fc.gpu.ada.1
+
+        # 运行时
+        runtime: custom-container
+        customContainerConfig:
+          args: ''
+          accelerationType: Default
+          image: ${vars.imageUrlMistral}
+          accelerationInfo:
+            status: Preparing
+          command: >-
+            ["bash","-c","/opt/nvidia/nvidia_entrypoint.sh python3 -m vllm_nvext.entrypoints.launch --enforce-eager"]
+          webServerMode: true
+
+        instanceConcurrency: 10
+        cpu: 8
+        memorySize: 65536
+        gpuMemorySize: 49152
+        asyncConfiguration: {}
+
+        environmentVariables:
+          NGC_API_KEY: "${vars.apiKey}" 
+          NIM_CACHE_PATH: "/mnt/auto"
+          TLLM_LOG_LEVEL: "ERROR"
+          UVICORN_LOG_LEVEL: "info"
+          VLLM_LOGGING_CONFIG_PATH: "/etc/nim/config/python_readable_logging_config.json"
+          VLLM_NVEXT_LOG_LEVEL: "INFO"
+          VLLM_NVEXT_LOGGING_CONFIG_PATH: "/etc/nim/config/python_readable_logging_config.json"
+
+        customHealthCheckConfig:
+          httpGetUrl: /v1/health/ready # 容器自定义健康检查 URL 地址
+          initialDelaySeconds: 0 # 容器启动到发起健康检查的延迟
+          periodSeconds: 120 # 健康检查周期
+          timeoutSeconds: 3 # 健康检查超时时间
+          failureThreshold: 3 # 健康检查失败次数阈值
+          successThreshold: 1 # 健康检查成功次数阈值
+
+      triggers:
+        - name: defaultTrigger
+          description: ''
+          type: http
+          qualifier: LATEST
+          config:
+            methods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+            authType: anonymous
+            disableURLInternet: false

@@ -1,0 +1,249 @@
+# ------------------------------------
+#   官方手册: https://docs.serverless-devs.com/user-guide/aliyun/#fc3
+#   常见小贴士: https://manual.serverless-devs.com/user-guide/tips/
+#   有问题快来钉钉群问一下吧：33947367
+# ------------------------------------
+edition: 1.0.0
+name: ai_story
+access: default
+
+vars: 
+  region: "cn-shanghai"
+  serviceName: "AI_Story"
+  functionName: "nim_aistory" 
+  imageUrlAIStory: registry.cn-shanghai.aliyuncs.com/aliyun-fc/nim-nvidia-fastpitch-hifigan-tts-1.0.0-fc-1:frontend-aistory-v1
+  imageUrlLlama3: registry.cn-shanghai.aliyuncs.com/aliyun-fc/nim-nvidia-fastpitch-hifigan-tts-1.0.0-fc-1:nim-meta-llama-3.1-8b-instruct-1.2.2-fc-1
+  imageUrlMistral: registry.cn-shanghai.aliyuncs.com/aliyun-fc/nim-nvidia-fastpitch-hifigan-tts-1.0.0-fc-1:nim-mistralai-mistral-7b-instruct-v0.3-1.1.2
+  apiKey: "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"
+  service:
+    name: ${vars.serviceName}
+    description: 'AI_Story 部署到函数计算'
+    internetAccess: true
+    logConfig: auto
+    vpcConfig: auto
+    nasConfig: auto
+
+services:
+  # 模型初始化函数
+  initial:
+    component: fc
+    actions: 
+      pre-deploy: 
+        - run: export core_load_serverless_devs_component=devsapp/fc-deploy@0.0.121
+      post-deploy:
+        - run: s cli fc invoke --timeout 3600 -a root --service-name AI_Story --function-name init --region cn-shanghai && s cli fc provision put --qualifier LATEST --target 1 --enable-idle-billing true -a root --service-name AI_Story --function-name mistral --region cn-shanghai && s cli fc provision put --qualifier LATEST --target 1 --enable-idle-billing true -a root --service-name AI_Story --function-name llama3_1_8b --region cn-shanghai
+
+        - run: while true; do currentMistral="$(s cli fc provision get --qualifier LATEST --target current 1 --service-name AI_Story --function-name mistral --region cn-shanghai -a root | tr -d ' ' | awk -F ':' '/current:/ {print $2}' | sed 's/\x1b\[[0-9;]*m//g')"; currentLlama3="$(s cli fc provision get --qualifier LATEST --target current 1 --service-name AI_Story --function-name llama3_1_8b --region cn-shanghai -a root | tr -d ' ' | awk -F ':' '/current:/ {print $2}' | sed 's/\x1b\[[0-9;]*m//g')"; if [ "$currentMistral" == '1' ] && [ "$currentLlama3" == '1' ]; then echo 1; break; else echo "wait provision instance ready, currentMistral $currentMistral; currentLlama3 $currentLlama3;" && sleep 5; fi; done;
+    props:
+      region: ${vars.region}
+      service: ${vars.service}
+      function:
+        name: init
+        description: 模型初始化函数
+        handler: main.handler
+        timeout: 3600
+        diskSize: 512
+        codeUri: './initial'
+        runtime: python3.10
+        cpu: 16
+        instanceConcurrency: 1
+        # cpu: 8
+        memorySize: 32768
+
+  # FrontEnd
+  aiStory:
+    component: fc
+    actions: 
+      post-deploy: 
+        - component: fc ondemand put --qualifier LATEST --max 1
+    props:
+      region: "${vars.region}" 
+      service: ${vars.service}
+      function:
+        name: ${vars.functionName}
+        description: "NIM_AISTORY"
+
+        handler: index.handler
+        timeout: 600
+        diskSize: 512
+        caPort: 8501
+        # 运行时
+        runtime: custom-container
+        customContainerConfig:
+          args: ''
+          accelerationType: Default
+          image: ${vars.imageUrlAIStory}
+          accelerationInfo:
+            status: Preparing
+          command: ''
+          webServerMode: true
+        # 规格
+        instanceConcurrency: 100
+        cpu: 8
+        memorySize: 32768
+        environmentVariables:
+          BASE_URL_LLAMA: "${llama3.output.url.system_url}/v1"
+          BASE_URL_MISTRAL: "${mistral.output.url.system_url}/v1"
+          API_KEY: "${vars.apiKey}"
+
+      triggers:
+        - name: defaultTrigger
+          description: ''
+          type: http
+          qualifier: LATEST
+          config:
+            methods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+            authType: anonymous
+            disableURLInternet: false
+
+      customDomains:
+        - domainName: auto
+          protocol: HTTP
+          routeConfigs:
+            - path: /*
+
+
+  #backend
+  llama3:
+    component: fc
+    actions: 
+      pre-deploy: 
+        - run: export core_load_serverless_devs_component=devsapp/fc-deploy@0.0.121
+    props:
+      region: ${vars.region}
+      service: ${vars.service}
+      function:
+        name: "llama3_1_8b"
+        description: AI_Story 后端 llama3_1_8b 函数
+
+        handler: index.handler
+        timeout: 600
+        diskSize: 10240
+        caPort: 8000
+        instanceType: fc.gpu.ada.1
+
+        # 运行时
+        runtime: custom-container
+        customContainerConfig:
+          args: ''
+          accelerationType: Default
+          image: ${vars.imageUrlLlama3}
+          accelerationInfo:
+            status: Preparing
+          command: >-
+            ["bash","-c","/opt/nvidia/nvidia_entrypoint.sh python3 -m vllm_nvext.entrypoints.launch --enforce-eager --disable-custom-all-reduce"]
+          webServerMode: true
+
+        instanceConcurrency: 10
+        cpu: 8
+        memorySize: 65536
+        gpuMemorySize: 49152
+        asyncConfiguration: {}
+
+        environmentVariables:
+          NGC_API_KEY: "${vars.apiKey}" 
+          NIM_CACHE_PATH: "/mnt/auto"
+          HF_HUB_OFFLINE: 1
+          HF_HOME: /mnt/auto/huggingface/hub
+          NIM_MODEL_PROFILE: "3bb4e8fe78e5037b05dd618cebb1053347325ad6a1e709e0eb18bb8558362ac5"
+          TLLM_LOG_LEVEL: "ERROR"
+          UVICORN_LOG_LEVEL: "info"
+          VLLM_LOGGING_CONFIG_PATH: "/etc/nim/config/python_readable_logging_config.json"
+          VLLM_NVEXT_LOG_LEVEL: "INFO"
+          VLLM_NVEXT_LOGGING_CONFIG_PATH: "/etc/nim/config/python_readable_logging_config.json"
+          VLLM_ENGINE_ITERATION_TIMEOUT_S: 180
+
+        customHealthCheckConfig:
+          httpGetUrl: /v1/health/ready # 容器自定义健康检查 URL 地址
+          initialDelaySeconds: 5 # 容器启动到发起健康检查的延迟
+          periodSeconds: 120 # 健康检查周期
+          timeoutSeconds: 3 # 健康检查超时时间
+          failureThreshold: 3 # 健康检查失败次数阈值
+          successThreshold: 1 # 健康检查成功次数阈值
+
+      triggers:
+        - name: defaultTrigger
+          description: ''
+          type: http
+          qualifier: LATEST
+          config:
+            methods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+            authType: anonymous
+            disableURLInternet: false
+  
+  mistral:
+    component: fc
+    actions: 
+      pre-deploy: 
+        - run: export core_load_serverless_devs_component=devsapp/fc-deploy@0.0.121
+    props:
+      region: ${vars.region}
+      service: ${vars.service}
+      function:
+        name: "mistral"
+        description: AI_Story 后端 mistral 函数
+
+        handler: index.handler
+        timeout: 600
+        diskSize: 10240
+        caPort: 8000
+        instanceType: fc.gpu.ada.1
+
+        # 运行时
+        runtime: custom-container
+        customContainerConfig:
+          args: ''
+          accelerationType: Default
+          image: ${vars.imageUrlMistral}
+          accelerationInfo:
+            status: Preparing
+          # command: bash -c 'id; /opt/nvidia/nvidia_entrypoint.sh python3 -m vllm_nvext.entrypoints.launch --enforce-eager; python3 -m http.server 8000'
+          command: >-
+            ["bash","-c","/opt/nvidia/nvidia_entrypoint.sh python3 -m vllm_nvext.entrypoints.launch --enforce-eager --disable-custom-all-reduce"]
+          webServerMode: true
+
+        instanceConcurrency: 10
+        cpu: 8
+        memorySize: 65536
+        gpuMemorySize: 49152
+        asyncConfiguration: {}
+
+        environmentVariables:
+          NGC_API_KEY: "${vars.apiKey}" 
+          NIM_CACHE_PATH: "/mnt/auto"
+          TLLM_LOG_LEVEL: "ERROR"
+          UVICORN_LOG_LEVEL: "info"
+          VLLM_LOGGING_CONFIG_PATH: "/etc/nim/config/python_readable_logging_config.json"
+          VLLM_NVEXT_LOG_LEVEL: "INFO"
+          VLLM_NVEXT_LOGGING_CONFIG_PATH: "/etc/nim/config/python_readable_logging_config.json"
+          VLLM_ENGINE_ITERATION_TIMEOUT_S: 180
+
+        customHealthCheckConfig:
+          httpGetUrl: /v1/health/ready # 容器自定义健康检查 URL 地址
+          initialDelaySeconds: 5 # 容器启动到发起健康检查的延迟
+          periodSeconds: 120 # 健康检查周期
+          timeoutSeconds: 3 # 健康检查超时时间
+          failureThreshold: 3 # 健康检查失败次数阈值
+          successThreshold: 1 # 健康检查成功次数阈值
+
+      triggers:
+        - name: defaultTrigger
+          description: ''
+          type: http
+          qualifier: LATEST
+          config:
+            methods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+            authType: anonymous
+            disableURLInternet: false

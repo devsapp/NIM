@@ -1,0 +1,67 @@
+{
+  "statefulConfig": {
+    "functionId": "3c380eb7-ac7f-4ed1-b524-9fdc8a379ac2",
+    "functionName": "Fastpitch",
+    "description": "NIM 后端 Fastpitch 函数",
+    "runtime": "custom-container",
+    "handler": "index.handler",
+    "timeout": 600,
+    "initializer": "",
+    "initializationTimeout": 3,
+    "codeSize": 0,
+    "codeChecksum": "",
+    "memorySize": 65536,
+    "gpuMemorySize": 49152,
+    "cpu": 8,
+    "diskSize": 10240,
+    "environmentVariables": {
+      "NGC_API_KEY": "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",
+      "NIMFC_MODEL_EGREP": "fastpitch-hifigan-riva_ven-us_l40x1_24.06",
+      "NIM_CACHE_PATH": "/mnt/auto",
+      "NIM_HTTP_API_PORT": "9000",
+      "NIM_MANIFEST_PROFILE": "713858f8-43f3-11ef-86ee-4f6374fce1aa"
+    },
+    "createdTime": "2024-11-21T09:51:12Z",
+    "lastModifiedTime": "2024-11-22T01:57:58Z",
+    "instanceConcurrency": 100,
+    "instanceSoftConcurrency": null,
+    "customContainerConfig": {
+      "accelerationInfo": {
+        "status": "Preparing"
+      },
+      "accelerationType": "Default",
+      "args": "",
+      "command": "",
+      "image": "registry.cn-shanghai.aliyuncs.com/aliyun-fc/nim-nvidia-fastpitch-hifigan-tts-1.0.0-fc-1:v1",
+      "imageAcclConfig": null,
+      "lastAvailableImageAcclConfigInternal": null,
+      "instanceID": null,
+      "serverlessImage": null,
+      "webServerMode": true
+    },
+    "caPort": 50051,
+    "instanceType": "fc.gpu.ada.1",
+    "layers": null,
+    "layersArnV2": null,
+    "instanceLifecycleConfig": {
+      "preFreeze": {
+        "handler": "",
+        "timeout": 3
+      },
+      "preStop": {
+        "handler": "",
+        "timeout": 3
+      }
+    },
+    "customDNS": null,
+    "customRuntimeConfig": null,
+    "customHealthCheckConfig": null,
+    "name": "Fastpitch",
+    "asyncConfiguration": {
+      "destinationConfig": null,
+      "maxAsyncEventAgeInSeconds": null,
+      "statefulInvocation": null,
+      "maxAsyncRetryAttempts": null
+    }
+  }
+}
