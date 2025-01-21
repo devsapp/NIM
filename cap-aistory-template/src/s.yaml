@@ -1,0 +1,200 @@
+edition: 3.0.0
+name: ai_story
+access: '{{ access }}'
+
+vars: 
+  region: "{{ region }}"
+  functionName: "nim_aistory" 
+  imageUrlAIStory: registry.cn-shanghai.aliyuncs.com/aliyun-fc/nim-nvidia-fastpitch-hifigan-tts-1.0.0-fc-1:frontend-aistory-v1
+  imageUrlLlama3: registry.cn-shanghai.aliyuncs.com/aliyun-fc/nim-nvidia-fastpitch-hifigan-tts-1.0.0-fc-1:nim-meta-llama-3.1-8b-instruct-1.2.2-fc-1
+  imageUrlMistral: registry.cn-shanghai.aliyuncs.com/aliyun-fc/nim-nvidia-fastpitch-hifigan-tts-1.0.0-fc-1:nim-mistralai-mistral-7b-instruct-v0.3-1.1.2
+  apiKey: "{{ apiKey }}"
+  logConfig: true
+  gpu: "{{ gpu }}"
+  role: "acs:ram::${config('AccountID')}:role/aliyundevsdefaultrole"
+
+resources:
+  # 模型初始化函数
+  initial:
+    component: fc3
+    actions:
+      complete-deploy:
+        - run: s cli fc3 invoke --timeout 3600 -a {{ access }} --function-name init-aistory --region cn-shanghai
+    props:
+      region: ${vars.region}
+      functionName: init-aistory
+      description: 模型初始化函数
+      handler: main.handler
+      timeout: 3600
+      diskSize: 512
+      code: './initial'
+      runtime: python3.10
+      cpu: 16
+      instanceConcurrency: 1
+      memorySize: 32768
+      vpcConfig: auto
+      logConfig: auto
+      nasConfig: auto
+
+  # FrontEnd
+  aiStory:
+    component: fc3
+    props:
+      region: ${vars.region}
+      functionName: ${vars.functionName}
+      description: "NIM_AISTORY"
+
+      handler: index.handler
+      timeout: 600
+      diskSize: 512
+        # 运行时
+      runtime: custom-container
+      customContainerConfig:
+        port: 8501
+        image: ${vars.imageUrlAIStory}
+
+        # 规格
+      instanceConcurrency: 100
+      cpu: 8
+      memorySize: 32768
+      vpcConfig: auto
+      environmentVariables:
+        BASE_URL_LLAMA: "${resources.llama3.info.urlInternet}/v1"
+        BASE_URL_MISTRAL: "${resources.mistral.info.urlInternet}/v1"
+        API_KEY: ${vars.apiKey}
+
+      customDomain: 
+        protocol: "HTTP"  
+        route:  
+          path: "/*"  
+          qualifier: "LATEST" 
+        domainName  : auto
+
+
+  #backend
+  llama3:
+    component: model
+    props:
+      region: ${vars.region}
+      name: "llama3_1_8b"
+      description: 'llama3_1_8b 函数'
+      logConfig: '${vars.logConfig}'
+      modelConfig:
+        sourceType: custom-container
+      role: '${vars.role}'
+
+      # 实例规格
+      timeout: 600
+      diskSize: 10240
+      cpu: 8
+      memorySize: 65536
+      instanceConcurrency: 10
+      gpuConfig:
+        gpuMemorySize: 49152
+        gpuType: '${vars.gpu}'
+      provisionConfig:
+        target: 1
+        alwaysAllocateGPU: false
+
+      # 运行时
+      runtime: custom-container
+      vpcConfig: auto
+      # nasConfig: ${resources.initial.output.nasConfig}
+      nasConfig:
+        userId: 0
+        groupId: 0
+        mountPoints:
+          - serverAddr: ${resources.initial.output.nasConfig.mountPoints.0.serverAddr}
+            nasDir: ${resources.initial.output.nasConfig.mountPoints.0.mountDir}
+            fcDir: /mnt/auto 
+      customContainerConfig:
+        port: 8000
+        image: ${vars.imageUrlLlama3}
+        instanceConcurrency: 10
+        command: ["bash","-c","/opt/nvidia/nvidia_entrypoint.sh python3 -m vllm_nvext.entrypoints.launch --enforce-eager --disable-custom-all-reduce"]
+        webServerMode: true
+      
+      environmentVariables:
+        NGC_API_KEY: "${vars.apiKey}" 
+        NIM_CACHE_PATH: "/mnt/auto"
+        HF_HUB_OFFLINE: 1
+        HF_HOME: /mnt/auto/huggingface/hub
+        NIM_MODEL_PROFILE: "3bb4e8fe78e5037b05dd618cebb1053347325ad6a1e709e0eb18bb8558362ac5"
+        TLLM_LOG_LEVEL: "ERROR"
+        UVICORN_LOG_LEVEL: "info"
+        VLLM_LOGGING_CONFIG_PATH: "/etc/nim/config/python_readable_logging_config.json"
+        VLLM_NVEXT_LOG_LEVEL: "INFO"
+        VLLM_NVEXT_LOGGING_CONFIG_PATH: "/etc/nim/config/python_readable_logging_config.json"
+        VLLM_ENGINE_ITERATION_TIMEOUT_S: 180
+
+      customHealthCheckConfig:
+        httpGetUrl: /v1/health/ready # 容器自定义健康检查 URL 地址
+        initialDelaySeconds: 5 # 容器启动到发起健康检查的延迟
+        periodSeconds: 120 # 健康检查周期
+        timeoutSeconds: 3 # 健康检查超时时间
+        failureThreshold: 3 # 健康检查失败次数阈值
+        successThreshold: 1 # 健康检查成功次数阈值
+
+      httpTrigger: auto
+
+  mistral:
+    component: model
+    props:
+      region: ${vars.region}
+      name: "mistral"
+      description: AI_Story 后端 mistral 函数
+      logConfig: '${vars.logConfig}'
+      modelConfig:
+        sourceType: custom-container
+      role: '${vars.role}'
+
+      # 实例规格
+      timeout: 600
+      diskSize: 10240
+      cpu: 8
+      memorySize: 65536
+      instanceConcurrency: 10
+      gpuConfig:
+        gpuMemorySize: 49152
+        gpuType: '${vars.gpu}'
+      provisionConfig:
+        target: 1
+        alwaysAllocateGPU: false
+
+      # 运行时
+      runtime: custom-container
+      vpcConfig: auto
+      # nasConfig: ${resources.initial.output.nasConfig}    
+      nasConfig:
+        userId: 0
+        groupId: 0
+        mountPoints:
+          - serverAddr: ${resources.initial.output.nasConfig.mountPoints.0.serverAddr}
+            nasDir: ${resources.initial.output.nasConfig.mountPoints.0.mountDir}
+            fcDir: /mnt/auto 
+      customContainerConfig:
+        port: 8000
+        image: ${vars.imageUrlMistral}
+        instanceConcurrency: 10
+        command: ["bash","-c","/opt/nvidia/nvidia_entrypoint.sh python3 -m vllm_nvext.entrypoints.launch --enforce-eager --disable-custom-all-reduce"]
+        webServerMode: true
+      
+      environmentVariables:
+        NGC_API_KEY: "${vars.apiKey}" 
+        NIM_CACHE_PATH: "/mnt/auto"
+        TLLM_LOG_LEVEL: "ERROR"
+        UVICORN_LOG_LEVEL: "info"
+        VLLM_LOGGING_CONFIG_PATH: "/etc/nim/config/python_readable_logging_config.json"
+        VLLM_NVEXT_LOG_LEVEL: "INFO"
+        VLLM_NVEXT_LOGGING_CONFIG_PATH: "/etc/nim/config/python_readable_logging_config.json"
+        VLLM_ENGINE_ITERATION_TIMEOUT_S: 180
+
+      customHealthCheckConfig:
+        httpGetUrl: /v1/health/ready # 容器自定义健康检查 URL 地址
+        initialDelaySeconds: 5 # 容器启动到发起健康检查的延迟
+        periodSeconds: 120 # 健康检查周期
+        timeoutSeconds: 3 # 健康检查超时时间
+        failureThreshold: 3 # 健康检查失败次数阈值
+        successThreshold: 1 # 健康检查成功次数阈值
+
+      httpTrigger: auto
