@@ -104,8 +104,8 @@ resources:
         userId: 0
         groupId: 0
         mountPoints:
-          - serverAddr: ${resources.initial.output.nasConfig.mountPoints[0].serverAddr}
-            nasDir: ${resources.initial.output.nasConfig.mountPoints[0].mountDir}
+          - serverAddr: ${resources.initial.output.nasConfig.mountPoints.0.serverAddr}
+            nasDir: ${resources.initial.output.nasConfig.mountPoints.0.mountDir}
             fcDir: /mnt/auto 
       customContainerConfig:
         port: 8000
