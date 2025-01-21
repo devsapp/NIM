@@ -1,0 +1,3 @@
+while true; do \
+currentMistral="$(s cli fc provision get --qualifier LATEST --target current 1 --service-name AI_Story --function-name mistral --region cn-shanghai -a root | tr -d ' ' | awk -F ':' '/current:/ {print $2}' | sed 's/\x1b\[[0-9;]*m//g')"; currentLlama3="$(s cli fc provision get --qualifier LATEST --target current 1 --service-name AI_Story --function-name llama3_1_8b --region cn-shanghai -a root | tr -d ' ' | awk -F ':' '/current:/ {print $2}' | sed 's/\x1b\[[0-9;]*m//g')"; if [ "$currentMistral" == '1' ] && [ "$currentLlama3" == '1' ]; then echo 1; break; else echo "wait provision instance ready, currentMistral $currentMistral; currentLlama3 $currentLlama3;" && \
+sleep 5; fi; done;
