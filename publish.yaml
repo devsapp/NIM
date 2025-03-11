@@ -43,7 +43,7 @@ Parameters:
       title: 模型 API_KEY
       type: string
       pattern: "^[a-zA-Z_][a-zA-Z0-9-_]{0,127}$"
-      description: 模型的API_KEY，需要到 NV 控制台获取
+      description: 模型的 API_KEY，需要到 NV 控制台获取
 
     gpu:
       title: 显卡类型

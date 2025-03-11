@@ -42,7 +42,7 @@ resources:
     props:
       region: ${vars.region}
       functionName: ${vars.functionName}
-      description: "NIM_AISTORY"
+      description: "nim aistory frontend"
 
       handler: index.handler
       timeout: 600
@@ -105,8 +105,7 @@ resources:
         groupId: 0
         mountPoints:
           - serverAddr: ${resources.initial.output.nasConfig.mountPoints.0.serverAddr}
-            nasDir: ${resources.initial.output.nasConfig.mountPoints.0.mountDir}
-            fcDir: /mnt/auto 
+            mountDir: "/mnt/auto"
       customContainerConfig:
         port: 8000
         image: ${vars.imageUrlLlama3}
@@ -137,12 +136,19 @@ resources:
 
       httpTrigger: auto
 
+      customDomains:
+        - domainName: auto
+          protocol: HTTP
+          routeConfigs:
+            - path: /*
+              qualifier: LATEST
+
   mistral:
     component: model
     props:
       region: ${vars.region}
       name: "mistral"
-      description: AI_Story 后端 mistral 函数
+      description: AI Story 后端 mistral 函数
       logConfig: '${vars.logConfig}'
       modelConfig:
         sourceType: custom-container
@@ -170,8 +176,7 @@ resources:
         groupId: 0
         mountPoints:
           - serverAddr: ${resources.initial.output.nasConfig.mountPoints.0.serverAddr}
-            nasDir: ${resources.initial.output.nasConfig.mountPoints.0.mountDir}
-            fcDir: /mnt/auto 
+            mountDir: /mnt/auto
       customContainerConfig:
         port: 8000
         image: ${vars.imageUrlMistral}
@@ -198,3 +203,10 @@ resources:
         successThreshold: 1 # 健康检查成功次数阈值
 
       httpTrigger: auto
+
+      customDomains:
+        - domainName: auto
+          protocol: HTTP
+          routeConfigs:
+            - path: /*
+              qualifier: LATEST
