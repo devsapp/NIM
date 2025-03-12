@@ -39,7 +39,7 @@ resources:
   searchfile:
     component: fc3
     actions: 
-      coomplete-deploy: 
+      complete-deploy: 
         - run: bash ./post-check
     props:
       region: "${vars.region}" 
