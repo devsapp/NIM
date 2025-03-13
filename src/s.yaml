@@ -73,7 +73,7 @@ resources:
 
   #backend
   llama3:
-    component: model
+    component: model@dev
     props:
       region: ${vars.region}
       name: "llama3_1_8b"
@@ -112,6 +112,13 @@ resources:
         instanceConcurrency: 10
         command: ["bash","-c","/opt/nvidia/nvidia_entrypoint.sh python3 -m vllm_nvext.entrypoints.launch --enforce-eager --disable-custom-all-reduce"]
         webServerMode: true
+        healthCheckConfig:
+          httpGetUrl: /v1/health/ready # 容器自定义健康检查 URL 地址
+          initialDelaySeconds: 5 # 容器启动到发起健康检查的延迟
+          periodSeconds: 120 # 健康检查周期
+          timeoutSeconds: 3 # 健康检查超时时间
+          failureThreshold: 3 # 健康检查失败次数阈值
+          successThreshold: 1 # 健康检查成功次数阈值
       
       environmentVariables:
         NGC_API_KEY: "${vars.apiKey}" 
@@ -126,14 +133,6 @@ resources:
         VLLM_NVEXT_LOGGING_CONFIG_PATH: "/etc/nim/config/python_readable_logging_config.json"
         VLLM_ENGINE_ITERATION_TIMEOUT_S: 180
 
-      customHealthCheckConfig:
-        httpGetUrl: /v1/health/ready # 容器自定义健康检查 URL 地址
-        initialDelaySeconds: 5 # 容器启动到发起健康检查的延迟
-        periodSeconds: 120 # 健康检查周期
-        timeoutSeconds: 3 # 健康检查超时时间
-        failureThreshold: 3 # 健康检查失败次数阈值
-        successThreshold: 1 # 健康检查成功次数阈值
-
       httpTrigger: auto
 
       customDomains:
@@ -144,7 +143,7 @@ resources:
               qualifier: LATEST
 
   mistral:
-    component: model
+    component: model@dev
     props:
       region: ${vars.region}
       name: "mistral"
@@ -183,6 +182,13 @@ resources:
         instanceConcurrency: 10
         command: ["bash","-c","/opt/nvidia/nvidia_entrypoint.sh python3 -m vllm_nvext.entrypoints.launch --enforce-eager --disable-custom-all-reduce"]
         webServerMode: true
+        healthCheckConfig:
+          httpGetUrl: /v1/health/ready # 容器自定义健康检查 URL 地址
+          initialDelaySeconds: 5 # 容器启动到发起健康检查的延迟
+          periodSeconds: 120 # 健康检查周期
+          timeoutSeconds: 3 # 健康检查超时时间
+          failureThreshold: 3 # 健康检查失败次数阈值
+          successThreshold: 1 # 健康检查成功次数阈值
       
       environmentVariables:
         NGC_API_KEY: "${vars.apiKey}" 
@@ -193,14 +199,6 @@ resources:
         VLLM_NVEXT_LOG_LEVEL: "INFO"
         VLLM_NVEXT_LOGGING_CONFIG_PATH: "/etc/nim/config/python_readable_logging_config.json"
         VLLM_ENGINE_ITERATION_TIMEOUT_S: 180
-
-      customHealthCheckConfig:
-        httpGetUrl: /v1/health/ready # 容器自定义健康检查 URL 地址
-        initialDelaySeconds: 5 # 容器启动到发起健康检查的延迟
-        periodSeconds: 120 # 健康检查周期
-        timeoutSeconds: 3 # 健康检查超时时间
-        failureThreshold: 3 # 健康检查失败次数阈值
-        successThreshold: 1 # 健康检查成功次数阈值
 
       httpTrigger: auto
 
