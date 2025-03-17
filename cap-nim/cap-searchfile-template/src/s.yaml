@@ -58,7 +58,7 @@ resources:
       vpcConfig: auto
       
       environmentVariables:
-        BASE_URL_MISTRAL: "${resources.mistral.info.urlInternet}/v1"
+        BASE_URL_MISTRAL: "${resources.mistral.info.urlIntranet}/v1"
         API_KEY: "${vars.apiKey}"
 
       customDomain: 
@@ -70,7 +70,7 @@ resources:
 
   #backend
   mistral:
-    component: model@dev
+    component: model
     props:
       region: ${vars.region}
       name: "mistral"
@@ -128,10 +128,3 @@ resources:
         VLLM_ENGINE_ITERATION_TIMEOUT_S: 180
 
       httpTrigger: auto
-
-      customDomain: 
-        protocol: "HTTP"  
-        route:  
-          path: "/*"  
-          qualifier: "LATEST" 
-        domainName  : auto
