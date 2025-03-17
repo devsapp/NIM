@@ -59,8 +59,8 @@ resources:
       memorySize: 32768
       vpcConfig: auto
       environmentVariables:
-        BASE_URL_LLAMA: "${resources.llama3.info.urlInternet}/v1"
-        BASE_URL_MISTRAL: "${resources.mistral.info.urlInternet}/v1"
+        BASE_URL_LLAMA: "${resources.llama3.info.urlIntranet}/v1"
+        BASE_URL_MISTRAL: "${resources.mistral.info.urlIntranet}/v1"
         API_KEY: ${vars.apiKey}
 
       customDomain: 
@@ -73,7 +73,7 @@ resources:
 
   #backend
   llama3:
-    component: model@dev
+    component: model
     props:
       region: ${vars.region}
       name: "llama3_1_8b"
@@ -135,15 +135,8 @@ resources:
 
       httpTrigger: auto
 
-      customDomains:
-        - domainName: auto
-          protocol: HTTP
-          routeConfigs:
-            - path: /*
-              qualifier: LATEST
-
   mistral:
-    component: model@dev
+    component: model
     props:
       region: ${vars.region}
       name: "mistral"
@@ -201,10 +194,3 @@ resources:
         VLLM_ENGINE_ITERATION_TIMEOUT_S: 180
 
       httpTrigger: auto
-
-      customDomains:
-        - domainName: auto
-          protocol: HTTP
-          routeConfigs:
-            - path: /*
-              qualifier: LATEST
