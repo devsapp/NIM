@@ -18,33 +18,22 @@ resources:
     component: fc3
     actions:
       complete-deploy:
-        - run: s cli fc3 invoke --timeout 3600 -a {{ access }} --function-name init-asr-clear --region cn-shanghai
+        - run: s cli fc3 invoke --timeout 3600 -a {{ access }} --function-name init-asr --region cn-shanghai
     props:
       region: ${vars.region}
-      functionName: init-asr-clear
+      functionName: init-asr
       description: 模型初始化函数
       handler: main.handler
       timeout: 3600
-      diskSize: 512
+      diskSize: 10240
       code: './initial'
       runtime: python3.10
       cpu: 16
       instanceConcurrency: 1
       memorySize: 32768
       vpcConfig: auto
-      # vpcConfig: # VPC配置, 配置后function可以访问指定VPC
-      #   vpcId: vpc-uf638ir76pc2cevmfg246 # VPC ID
-      #   securityGroupId: sg-uf6780p0snansz1dvusf # 安全组ID
-      #   vSwitchIds: 
-      #     - vsw-uf6p62lo20onpj48mpg60 # 交换机 ID 列表
       logConfig: auto
       nasConfig: auto
-      # nasConfig:
-      #   userId: 0
-      #   groupId: 0
-      #   mountPoints:
-      #     - serverAddr: 389484a516-kva6.cn-shanghai.nas.aliyuncs.com:/asr-fc3-cap-test
-      #       mountDir: /mnt/auto
 
 
   # FrontEnd
@@ -64,16 +53,16 @@ resources:
       customContainerConfig:
         port: 8501
         image: ${vars.imageUrlASR}
+        # 暂时性解决 updatefunction 不支持 acree 的问题
+        registryConfig:
+          certConfig:
+            insecure: false
       # 规格
       instanceConcurrency: 100
       cpu: 8
       memorySize: 32768
       vpcConfig: auto
-      # vpcConfig: # VPC配置, 配置后function可以访问指定VPC
-      #   vpcId: vpc-uf638ir76pc2cevmfg246 # VPC ID
-      #   securityGroupId: sg-uf6780p0snansz1dvusf # 安全组ID
-      #   vSwitchIds: 
-      #     - vsw-uf6p62lo20onpj48mpg60 # 交换机 ID 列表
+      logConfig: auto
 
       environmentVariables:
         ENTRY_URL: "${resources.parakeet.info.urlInternet}:8089"
@@ -126,6 +115,10 @@ resources:
         image: ${vars.imageUrlParakeet}
         instanceConcurrency: 10
         webServerMode: true
+        # 暂时性解决 updatefunction 不支持 acree 的问题
+        registryConfig:
+          certConfig:
+            insecure: false
       
       environmentVariables:
         NGC_API_KEY: "${vars.apiKey}" 
@@ -135,53 +128,3 @@ resources:
         NIMFC_MODEL_EGREP: "parakeet-ctc-riva-1-1b.*l40|punctuation-riva.*l40"  
 
       httpTrigger: auto
-    # component: model@0.2.32
-    # component: model
-    # props:
-    #   region: ${vars.region}
-    #   name: "parakeet"
-    #   description: ASR 后端 parakeet 函数
-    #   logConfig: auto
-    #   modelConfig:
-    #     sourceType: custom-container
-
-    #   role: '${vars.role}'
-
-    #   # 函数配置
-    #   timeout: 600
-    #   diskSize: 30720
-    #   instanceConcurrency: 10
-    #   cpu: 8
-    #   memorySize: 65536
-    #   gpuConfig:
-    #     gpuMemorySize: 49152
-    #     gpuType: '${vars.gpu}'
-    #   provisionConfig:
-    #     target: 1
-    #     alwaysAllocateGPU: true
-
-    #   # 运行时
-    #   runtime: custom-container
-    #   vpcConfig: auto
-    #   nasConfig:
-    #     userId: 0
-    #     groupId: 0
-    #     mountPoints:
-    #       - serverAddr: ${resources.initial.output.nasConfig.mountPoints.0.serverAddr}
-    #         mountDir: /mnt/auto
-
-    #   customContainerConfig:
-    #     port: 50051
-    #     image: ${vars.imageUrlParakeet}
-    #     instanceConcurrency: 10
-    #     webServerMode: true
- 
-
-    #   environmentVariables:
-    #     NGC_API_KEY: "${vars.apiKey}" 
-    #     NIM_CACHE_PATH: "/mnt/auto"
-    #     NIM_HTTP_API_PORT: "9000"
-    #     NIM_MANIFEST_PROFILE: "40d7e326-43f4-11ef-87a2-239b5c506ca7"
-    #     NIMFC_MODEL_EGREP: "parakeet-ctc-riva-1-1b.*l40|punctuation-riva.*l40"          
-    
-    #   httpTrigger: auto

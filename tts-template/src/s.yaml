@@ -17,7 +17,7 @@ resources:
     component: fc3
     actions:
       complete-deploy:
-        - run: s cli fc3 invoke --timeout 3600 -a {{ access }} --function-name init-asr --region cn-shanghai
+        - run: s cli fc3 invoke --timeout 3600 -a {{ access }} --function-name init-tts --region cn-shanghai
     props:
       region: ${vars.region}
       functionName: init-tts
@@ -53,6 +53,10 @@ resources:
         image: ${vars.imageUrlTTS}
         port: 8501
         webServerMode: true
+      # 暂时性解决 updatefunction 不支持 acree 的问题
+      registryConfig:
+         certConfig:
+            insecure: false
 
       # 规格
       instanceConcurrency: 100
@@ -95,6 +99,10 @@ resources:
       provisionConfig:
         target: 1
         alwaysAllocateGPU: false
+      # 暂时性解决 updatefunction 不支持 acree 的问题
+      registryConfig:
+         certConfig:
+            insecure: false
 
       # 运行时
       runtime: custom-container
