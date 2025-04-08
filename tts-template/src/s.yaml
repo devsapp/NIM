@@ -1,0 +1,122 @@
+edition: 3.0.0
+name: tts
+access: '{{ access }}'
+
+vars: 
+  region: "{{ region }}"
+  functionName: "nim_tts" 
+  imageUrlTTS: cap-demo-public-registry.cn-hangzhou.cr.aliyuncs.com/cap-app/image-nim-frontend:tts-frontend-v1
+  imageUrlFastpitch: cap-demo-public-registry.cn-hangzhou.cr.aliyuncs.com/cap-app/image-nim-model:fastpitch-v1
+  apiKey: "{{ apiKey }}"
+  gpu: "{{ gpu }}"
+  role: "acs:ram::${config('AccountID')}:role/aliyundevsdefaultrole"
+
+resources:
+  # 模型初始化函数
+  initial:
+    component: fc3
+    actions:
+      complete-deploy:
+        - run: s cli fc3 invoke --timeout 3600 -a {{ access }} --function-name init-asr --region cn-shanghai
+    props:
+      region: ${vars.region}
+      functionName: init-tts
+      description: 模型初始化函数
+      handler: main.handler
+      timeout: 3600
+      diskSize: 512
+      code: './initial'
+      runtime: python3.10
+      cpu: 16
+      instanceConcurrency: 1
+      memorySize: 32768
+      vpcConfig: auto
+      logConfig: auto
+      nasConfig: auto
+
+  # FrontEnd
+  TTS:
+    component: fc3
+    props:
+      region: "${vars.region}" 
+      functionName: ${vars.functionName}
+      description: "nim tts frontend"
+
+      handler: index.handler
+      timeout: 600
+      diskSize: 512
+      # caPort: 8501
+
+      # 运行时
+      runtime: custom-container
+      customContainerConfig:
+        image: ${vars.imageUrlTTS}
+        port: 8501
+        webServerMode: true
+
+      # 规格
+      instanceConcurrency: 100
+      cpu: 8
+      memorySize: 32768
+      vpcConfig: auto
+
+      environmentVariables:
+        # ENTRY_URL: sgpu-niigan-tts-yous-zhouys-nim-sdnarfwfsu.cn-shanghai.fcapp.run:8089
+        ENTRY_URL: "${resources.fastpitch.info.urlInternet}:8089"
+
+      customDomain: 
+        protocol: "HTTP"  
+        route:  
+          path: "/*"  
+          qualifier: "LATEST" 
+        domainName  : auto
+
+
+  #backend
+  fastpitch:
+    component: model
+    props:
+      region: ${vars.region}
+      name: "fastpitch"
+      description: NIM 后端 Fastpitch 函数
+      logConfig: auto
+      modelConfig:
+        sourceType: custom-container
+      role: '${vars.role}'
+
+      timeout: 600
+      diskSize: 10240
+      cpu: 8
+      memorySize: 65536
+      instanceConcurrency: 10
+      gpuConfig:
+        gpuMemorySize: 49152
+        gpuType: '${vars.gpu}'
+      provisionConfig:
+        target: 1
+        alwaysAllocateGPU: false
+
+      # 运行时
+      runtime: custom-container
+      vpcConfig: auto
+      nasConfig:
+        userId: 0
+        groupId: 0
+        mountPoints:
+          - serverAddr: ${resources.initial.output.nasConfig.mountPoints.0.serverAddr}
+            mountDir: /mnt/auto
+
+      customContainerConfig:
+        port: 50051
+        image: ${vars.imageUrlFastpitch}
+        instanceConcurrency: 10
+        webServerMode: true
+      
+      environmentVariables:
+        NGC_API_KEY: "${vars.apiKey}" 
+        NIM_CACHE_PATH: "/mnt/auto"
+        NIM_HTTP_API_PORT: "9000"
+        NIM_MANIFEST_PROFILE: "713858f8-43f3-11ef-86ee-4f6374fce1aa"
+        NIMFC_MODEL_EGREP: "fastpitch-hifigan-riva_ven-us_l40x1_24.06"
+
+      httpTrigger: auto
