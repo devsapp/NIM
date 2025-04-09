@@ -53,10 +53,10 @@ resources:
         image: ${vars.imageUrlTTS}
         port: 8501
         webServerMode: true
-      # 暂时性解决 updatefunction 不支持 acree 的问题
-      registryConfig:
-         certConfig:
-            insecure: false
+        # 暂时性解决 updatefunction 不支持 acree 的问题
+        registryConfig:
+          certConfig:
+              insecure: false
 
       # 规格
       instanceConcurrency: 100
@@ -99,10 +99,7 @@ resources:
       provisionConfig:
         target: 1
         alwaysAllocateGPU: false
-      # 暂时性解决 updatefunction 不支持 acree 的问题
-      registryConfig:
-         certConfig:
-            insecure: false
+      
 
       # 运行时
       runtime: custom-container
@@ -119,6 +116,10 @@ resources:
         image: ${vars.imageUrlFastpitch}
         instanceConcurrency: 10
         webServerMode: true
+        # 暂时性解决 updatefunction 不支持 acree 的问题
+        registryConfig:
+          certConfig:
+              insecure: false
       
       environmentVariables:
         NGC_API_KEY: "${vars.apiKey}" 
